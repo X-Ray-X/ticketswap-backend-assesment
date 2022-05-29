@@ -28,8 +28,15 @@ final class Ticket
         return $this->buyer !== null;
     }
 
+    /**
+     * @throws TicketAlreadySoldException
+     */
     public function buyTicket(Buyer $buyer) : self
     {
+        if ($this->isBought()) {
+            throw TicketAlreadySoldException::withTicket($this);
+        }
+
         $this->buyer = $buyer;
 
         return $this;

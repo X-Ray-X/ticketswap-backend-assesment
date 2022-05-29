@@ -8,6 +8,7 @@ final class Listing
 {
     /**
      * @param array<Ticket> $tickets
+     * @throws BarcodeAlreadyExistsException
      */
     public function __construct(
         private ListingId $id,
@@ -15,6 +16,7 @@ final class Listing
         private array $tickets,
         private Money $price
     ) {
+        $this->verifyIfBarcodesAreUnique($tickets);
     }
 
     public function getId() : ListingId
@@ -25,6 +27,11 @@ final class Listing
     public function getSeller() : Seller
     {
         return $this->seller;
+    }
+
+    public function getPrice() : Money
+    {
+        return $this->price;
     }
 
     /**
@@ -55,8 +62,20 @@ final class Listing
         }
     }
 
-    public function getPrice() : Money
+    /**
+     * @param array<Ticket> $tickets
+     * @throws BarcodeAlreadyExistsException
+     */
+    private function verifyIfBarcodesAreUnique(array $tickets) : void
     {
-        return $this->price;
+        /** @var Ticket $ticket */
+        foreach ($tickets as $ticket) {
+            array_shift($tickets);
+            foreach ($tickets as $subsequentTicket) {
+                if ((string) $ticket->getBarcode() !== (string) $subsequentTicket->getBarcode())  continue;
+
+                throw BarcodeAlreadyExistsException::withTicketsInListing($ticket, $subsequentTicket);
+            }
+        }
     }
 }

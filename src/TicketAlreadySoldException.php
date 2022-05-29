@@ -9,7 +9,7 @@ final class TicketAlreadySoldException extends \Exception
         return new self(
             sprintf(
                 'Ticket (%s) has already been sold',
-                (string) $ticket->getId()
+                $ticket->getId()
             )
         );
     }
