@@ -5,19 +5,33 @@ namespace TicketSwap\Assessment;
 use TicketSwap\Assessment\Exceptions\BarcodeAlreadyExistsException;
 use TicketSwap\Assessment\Exceptions\TicketAlreadySoldException;
 use TicketSwap\Assessment\Exceptions\TicketNotFoundException;
+use TicketSwap\Assessment\Roles\Admin;
+use TicketSwap\Assessment\Roles\Buyer;
 
 final class Marketplace
 {
     /**
+     * @param array<Listing> $listingsUnverified
      * @param array<Listing> $listingsForSale
      * @param array<Listing> $listingsSoldOut
      */
-    public function __construct(private array $listingsForSale = [], private array $listingsSoldOut = [])
-    {
+    public function __construct(
+        private array $listingsUnverified = [],
+        private array $listingsForSale = [],
+        private array $listingsSoldOut = []
+    ) {
     }
 
     /**
-     * @return array<Listing>
+     * @return Listing[]
+     */
+    public function getListingsUnverified(): array
+    {
+        return $this->listingsUnverified;
+    }
+
+    /**
+     * @return Listing[]
      */
     public function getListingsForSale() : array
     {
@@ -25,7 +39,7 @@ final class Marketplace
     }
 
     /**
-     * @return array<Listing>
+     * @return Listing[]
      */
     public function getListingsSoldOut() : array
     {
@@ -43,7 +57,7 @@ final class Marketplace
     {
         foreach($this->listingsForSale as $listing) {
             foreach($listing->getTickets() as $ticket) {
-                if ($ticket->getId()->equals($ticketId)) {
+                if ($ticket->getId()->equals($ticketId) && $listing->getVerifiedByAdmin()) {
                    $boughtTicket = $ticket->buyTicket($buyer);
 
                    $this->refreshListingsForSale();
@@ -63,7 +77,29 @@ final class Marketplace
     {
         $this->verifyBarcodesAgainstOtherListings($listing);
 
-        $this->listingsForSale[(string) $listing->getId()] = $listing;
+        $this->listingsUnverified[(string) $listing->getId()] = $listing;
+    }
+
+    /**
+     * @param Listing $listing
+     * @param Admin $admin
+     * @param bool $decisionVerified
+     * @return Listing
+     */
+    public function verifyListingByAdmin(Listing $listing, Admin $admin, bool $decisionVerified = true) : Listing
+    {
+        $currentVerificationState = $listing->getVerifiedByAdmin();
+        if (!$currentVerificationState && $decisionVerified) {
+            $this->listingsForSale[(string) $listing->getId()] = $listing;
+            unset($this->listingsUnverified[(string) $listing->getId()]);
+        }
+
+        if ($currentVerificationState && !$decisionVerified) {
+            $this->listingsUnverified[(string) $listing->getId()] = $listing;
+            unset($this->listingsForSale[(string) $listing->getId()]);
+        }
+
+        return $listing->setVerifiedByAdmin($decisionVerified ? $admin : null);
     }
 
     /**

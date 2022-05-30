@@ -5,15 +5,16 @@ namespace TicketSwap\Assessment\tests;
 use PHPUnit\Framework\TestCase;
 use Money\Currency;
 use Money\Money;
+use TicketSwap\Assessment\Roles\Admin;
 use TicketSwap\Assessment\Barcode;
-use TicketSwap\Assessment\Buyer;
+use TicketSwap\Assessment\Roles\Buyer;
 use TicketSwap\Assessment\Exceptions\BarcodeAlreadyExistsException;
 use TicketSwap\Assessment\Exceptions\TicketAlreadySoldException;
 use TicketSwap\Assessment\Exceptions\TicketNotFoundException;
 use TicketSwap\Assessment\Listing;
 use TicketSwap\Assessment\ListingId;
 use TicketSwap\Assessment\Marketplace;
-use TicketSwap\Assessment\Seller;
+use TicketSwap\Assessment\Roles\Seller;
 use TicketSwap\Assessment\Ticket;
 use TicketSwap\Assessment\TicketId;
 
@@ -26,7 +27,7 @@ class MarketplaceTest extends TestCase
     {
         $marketplace = new Marketplace(
             listingsForSale: [
-                new Listing(
+                (new Listing(
                     id: new ListingId('D59FDCCC-7713-45EE-A050-8A553A0F1169'),
                     seller: new Seller('Pascal'),
                     tickets: [
@@ -38,13 +39,36 @@ class MarketplaceTest extends TestCase
                         ),
                     ],
                     price: new Money(4950, new Currency('EUR')),
-                ),
+                ))->setVerifiedByAdmin(new Admin('Jake')),
             ]
         );
 
-        $listingsForSale = $marketplace->getListingsForSale();
+        $this->assertCount(1, $marketplace->getListingsForSale());
+    }
 
-        $this->assertCount(1, $listingsForSale);
+    /**
+     * @test
+     */
+    public function it_should_not_display_unverified_listings()
+    {
+        $marketplace = new Marketplace();
+        $marketplace->setListingForSale(
+            new Listing(
+                id: new ListingId('D59FDCCC-7713-45EE-A050-8A553A0F1169'),
+                seller: new Seller('Pascal'),
+                tickets: [
+                    new Ticket(
+                        new TicketId('6293BB44-2F5F-4E2A-ACA8-8CDF01AF401B'),
+                        [
+                            new Barcode('EAN-13', '38974312923'),
+                        ],
+                    ),
+                ],
+                price: new Money(4950, new Currency('EUR')),
+        ));
+
+        $this->assertCount(0, $marketplace->getListingsForSale());
+        $this->assertCount(1, $marketplace->getListingsUnverified());
     }
 
     /**
@@ -54,7 +78,7 @@ class MarketplaceTest extends TestCase
     {
         $marketplace = new Marketplace(
             listingsForSale: [
-                new Listing(
+                (new Listing(
                     id: new ListingId('D59FDCCC-7713-45EE-A050-8A553A0F1169'),
                     seller: new Seller('Pascal'),
                     tickets: [
@@ -66,7 +90,7 @@ class MarketplaceTest extends TestCase
                         ),
                     ],
                     price: new Money(4950, new Currency('EUR')),
-                ),
+                ))->setVerifiedByAdmin(new Admin('Jake')),
             ]
         );
 
@@ -86,7 +110,7 @@ class MarketplaceTest extends TestCase
     {
         $marketplace = new Marketplace(
             listingsForSale: [
-                new Listing(
+                (new Listing(
                     id: new ListingId('D59FDCCC-7713-45EE-A050-8A553A0F1169'),
                     seller: new Seller('Pascal'),
                     tickets: [
@@ -104,7 +128,7 @@ class MarketplaceTest extends TestCase
                         ),
                     ],
                     price: new Money(4950, new Currency('EUR')),
-                ),
+                ))->setVerifiedByAdmin(new Admin('Jake')),
             ]
         );
 
@@ -129,7 +153,7 @@ class MarketplaceTest extends TestCase
     {
         $marketplace = new Marketplace(
             listingsForSale: [
-                new Listing(
+                (new Listing(
                     id: new ListingId('D59FDCCC-7713-45EE-A050-8A553A0F1169'),
                     seller: new Seller('Pascal'),
                     tickets: [
@@ -141,7 +165,7 @@ class MarketplaceTest extends TestCase
                         ),
                     ],
                     price: new Money(4950, new Currency('EUR')),
-                ),
+                ))->setVerifiedByAdmin(new Admin('Jake')),
             ]
         );
 
@@ -161,9 +185,12 @@ class MarketplaceTest extends TestCase
             )
         );
 
-        $listingsForSale = $marketplace->getListingsForSale();
+        $unverifiedListing = $marketplace->getListingsUnverified()['26A7E5C4-3F59-4B3C-B5EB-6F2718BC31AD'];
 
-        $this->assertCount(2, $listingsForSale);
+        $marketplace->verifyListingByAdmin($unverifiedListing, new Admin('Jake'));
+
+        $this->assertCount(2, $marketplace->getListingsForSale());
+        $this->assertCount(0, $marketplace->getListingsUnverified());
     }
 
     /**
@@ -228,7 +255,7 @@ class MarketplaceTest extends TestCase
     {
         $marketplace = new Marketplace(
             listingsForSale: [
-                new Listing(
+                (new Listing(
                     id: new ListingId('D59FDCCC-7713-45EE-A050-8A553A0F1169'),
                     seller: new Seller('Pascal'),
                     tickets: [
@@ -240,7 +267,7 @@ class MarketplaceTest extends TestCase
                         ),
                     ],
                     price: new Money(4950, new Currency('EUR')),
-                ),
+                ))->setVerifiedByAdmin(new Admin('Jake')),
             ]
         );
 
@@ -265,9 +292,13 @@ class MarketplaceTest extends TestCase
             )
         );
 
-        $listingsForSale = $marketplace->getListingsForSale();
+        $unverifiedListing = $marketplace->getListingsUnverified()['26A7E5C4-3F59-4B3C-B5EB-6F2718BC31AD'];
 
-        $this->assertCount(1, $listingsForSale);
+        $marketplace->verifyListingByAdmin($unverifiedListing, new Admin('Jake'));
+
+        $this->assertCount(0, $marketplace->getListingsUnverified());
+        $this->assertCount(1, $marketplace->getListingsForSale());
+        $this->assertCount(1, $marketplace->getListingsSoldOut());
     }
 
     /**
@@ -308,7 +339,7 @@ class MarketplaceTest extends TestCase
     {
         $marketplace = new Marketplace(
             listingsForSale: [
-                new Listing(
+                (new Listing(
                     id: new ListingId('D59FDCCC-7713-45EE-A050-8A553A0F1169'),
                     seller: new Seller('Pascal'),
                     tickets: [
@@ -320,7 +351,7 @@ class MarketplaceTest extends TestCase
                         ),
                     ],
                     price: new Money(4950, new Currency('EUR')),
-                ),
+                ))->setVerifiedByAdmin(new Admin('Jake')),
             ]
         );
 

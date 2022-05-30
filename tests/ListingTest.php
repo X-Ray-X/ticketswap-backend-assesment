@@ -6,11 +6,11 @@ use PHPUnit\Framework\TestCase;
 use Money\Currency;
 use Money\Money;
 use TicketSwap\Assessment\Barcode;
-use TicketSwap\Assessment\Buyer;
 use TicketSwap\Assessment\Exceptions\BarcodeAlreadyExistsException;
 use TicketSwap\Assessment\Listing;
 use TicketSwap\Assessment\ListingId;
-use TicketSwap\Assessment\Seller;
+use TicketSwap\Assessment\Roles\Buyer;
+use TicketSwap\Assessment\Roles\Seller;
 use TicketSwap\Assessment\Ticket;
 use TicketSwap\Assessment\TicketId;
 

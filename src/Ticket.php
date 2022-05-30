@@ -4,6 +4,7 @@ namespace TicketSwap\Assessment;
 
 use TicketSwap\Assessment\Exceptions\TicketAlreadySoldException;
 use TicketSwap\Assessment\Exceptions\UnexpectedValueException;
+use TicketSwap\Assessment\Roles\Buyer;
 
 final class Ticket
 {

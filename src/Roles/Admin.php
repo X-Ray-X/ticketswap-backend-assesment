@@ -1,8 +1,8 @@
 <?php
 
-namespace TicketSwap\Assessment;
+namespace TicketSwap\Assessment\Roles;
 
-final class Seller implements \Stringable
+class Admin implements \Stringable
 {
     public function __construct(private string $name)
     {

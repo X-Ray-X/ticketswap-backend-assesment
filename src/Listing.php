@@ -4,9 +4,13 @@ namespace TicketSwap\Assessment;
 
 use Money\Money;
 use TicketSwap\Assessment\Exceptions\BarcodeAlreadyExistsException;
+use TicketSwap\Assessment\Roles\Admin;
+use TicketSwap\Assessment\Roles\Seller;
 
 final class Listing
 {
+    private ?string $verifiedByAdmin = null;
+
     /**
      * @param array<Ticket> $tickets
      * @throws BarcodeAlreadyExistsException
@@ -33,6 +37,25 @@ final class Listing
     public function getPrice() : Money
     {
         return $this->price;
+    }
+
+    /**
+     * @return Admin|null
+     */
+    public function getVerifiedByAdmin(): ?string
+    {
+        return $this->verifiedByAdmin;
+    }
+
+    /**
+     * @param Admin|null $verifiedByAdmin
+     * @return Listing
+     */
+    public function setVerifiedByAdmin(?Admin $verifiedByAdmin): self
+    {
+        $this->verifiedByAdmin = $verifiedByAdmin;
+
+        return $this;
     }
 
     /**

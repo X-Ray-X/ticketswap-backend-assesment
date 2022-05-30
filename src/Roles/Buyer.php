@@ -1,6 +1,6 @@
 <?php
 
-namespace TicketSwap\Assessment;
+namespace TicketSwap\Assessment\Roles;
 
 final class Buyer implements \Stringable
 {
