@@ -4,8 +4,25 @@ namespace TicketSwap\Assessment;
 
 final class Ticket
 {
-    public function __construct(private TicketId $id, private Barcode $barcode, private ?Buyer $buyer = null)
-    {
+    /**
+     * @param TicketId $id
+     * @param array<Barcode> $barcodes
+     * @param Buyer|null $buyer
+     * @throws UnexpectedValueException
+     */
+    public function __construct(
+        private TicketId $id,
+        private array $barcodes,
+        private ?Buyer $buyer = null
+    ) {
+        if (
+            empty($this->barcodes)
+            || !empty(array_filter($this->barcodes, function ($item) { return !is_a($item, Barcode::class); }))
+        ) {
+            throw new UnexpectedValueException(
+                'Cannot create new ticket - either no barcodes provided or one of the parameters is not an instance of ' . Barcode::class
+            );
+        }
     }
 
     public function getId() : TicketId
@@ -13,9 +30,12 @@ final class Ticket
         return $this->id;
     }
 
-    public function getBarcode() : Barcode
+    /**
+     * @return Barcode[]
+     */
+    public function getBarcodes() : array
     {
-        return $this->barcode;
+        return $this->barcodes;
     }
 
     public function getBuyer() : Buyer
@@ -33,12 +53,12 @@ final class Ticket
      */
     public function buyTicket(Buyer $buyer) : self
     {
-        if ($this->isBought()) {
-            throw TicketAlreadySoldException::withTicket($this);
+        if (!$this->isBought()) {
+            $this->buyer = $buyer;
+
+            return $this;
         }
 
-        $this->buyer = $buyer;
-
-        return $this;
+        throw TicketAlreadySoldException::withTicket($this);
     }
 }

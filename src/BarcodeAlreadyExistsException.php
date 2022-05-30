@@ -18,10 +18,9 @@ class BarcodeAlreadyExistsException extends \Exception
     {
         return new self(
             sprintf(
-                'Tickets with IDs: %s, %s contain a duplicated barcode: %s.',
+                'Tickets with IDs: %s, %s contain a duplicated barcode.',
                 $ticket->getId(),
                 $ticketWithDuplicateBarcode->getId(),
-                $ticketWithDuplicateBarcode->getBarcode(),
             )
         );
     }

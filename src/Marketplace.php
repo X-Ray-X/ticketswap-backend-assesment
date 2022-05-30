@@ -60,9 +60,9 @@ final class Marketplace
 
         foreach ($ticketsFromNewListing as $ticket) {
             foreach ($this->listingsForSale as $existingListing) {
-                $ticketFound = $this->findBarcodeInListing($ticket, $existingListing);
+                $duplicatedTicket = $this->findDuplicateBarcodeInListing($ticket, $existingListing);
 
-                if (!$ticketFound || $this->isTicketResell($ticketFound, $listing)) continue;
+                if (!$duplicatedTicket || $this->isTicketResell($duplicatedTicket, $listing)) continue;
 
                 throw BarcodeAlreadyExistsException::withTicket($ticket);
             }
@@ -74,13 +74,17 @@ final class Marketplace
      * @param Listing $listing
      * @return bool|Ticket
      */
-    private function findBarcodeInListing(Ticket $ticket, Listing $listing) : bool | Ticket
+    private function findDuplicateBarcodeInListing(Ticket $ticket, Listing $listing) : bool | Ticket
     {
         /** @var Ticket $ticketFromExistingListing */
         foreach ($listing->getTickets() as $ticketFromExistingListing) {
-            if ((string) $ticketFromExistingListing->getBarcode() !== (string) $ticket->getBarcode()) continue;
+            foreach ($ticketFromExistingListing->getBarcodes() as $barcodeFromExistingListing) {
+                foreach ($ticket->getBarcodes() as $barcodeFromNewTicket) {
+                    if ((string) $barcodeFromNewTicket !== (string) $barcodeFromExistingListing) continue;
 
-            return $ticketFromExistingListing;
+                    return $ticketFromExistingListing;
+                }
+            }
         }
 
         return false;

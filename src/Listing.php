@@ -71,8 +71,14 @@ final class Listing
         /** @var Ticket $ticket */
         foreach ($tickets as $ticket) {
             array_shift($tickets);
+
+            // Convert array of Barcode objects into an array of their string representation
+            $barcodes = array_map('strval', $ticket->getBarcodes());
+
             foreach ($tickets as $subsequentTicket) {
-                if ((string) $ticket->getBarcode() !== (string) $subsequentTicket->getBarcode())  continue;
+                $subsequentBarcodes = array_map('strval', $subsequentTicket->getBarcodes());
+
+                if (empty(array_intersect($barcodes, $subsequentBarcodes))) continue;
 
                 throw BarcodeAlreadyExistsException::withTicketsInListing($ticket, $subsequentTicket);
             }
