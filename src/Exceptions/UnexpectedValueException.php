@@ -1,6 +1,6 @@
 <?php
 
-namespace TicketSwap\Assessment;
+namespace TicketSwap\Assessment\Exceptions;
 
 class UnexpectedValueException extends \Exception
 {

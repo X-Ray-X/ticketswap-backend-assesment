@@ -6,8 +6,8 @@ use PHPUnit\Framework\TestCase;
 use Money\Currency;
 use Money\Money;
 use TicketSwap\Assessment\Barcode;
-use TicketSwap\Assessment\BarcodeAlreadyExistsException;
 use TicketSwap\Assessment\Buyer;
+use TicketSwap\Assessment\Exceptions\BarcodeAlreadyExistsException;
 use TicketSwap\Assessment\Listing;
 use TicketSwap\Assessment\ListingId;
 use TicketSwap\Assessment\Seller;
@@ -104,7 +104,7 @@ class ListingTest extends TestCase
         $this->assertSame('B47CBE2D-9F80-47D9-A9CC-894CE82AA6BA', (string) $ticketsForSale[0]->getId());
     }
 
-        /**
+    /**
      * @test
      */
     public function it_should_list_the_tickets_not_for_sale()

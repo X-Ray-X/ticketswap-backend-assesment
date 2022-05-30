@@ -1,6 +1,8 @@
 <?php
 
-namespace TicketSwap\Assessment;
+namespace TicketSwap\Assessment\Exceptions;
+
+use TicketSwap\Assessment\Ticket;
 
 final class TicketAlreadySoldException extends \Exception
 {

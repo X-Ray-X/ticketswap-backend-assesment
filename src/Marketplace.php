@@ -2,12 +2,17 @@
 
 namespace TicketSwap\Assessment;
 
+use TicketSwap\Assessment\Exceptions\BarcodeAlreadyExistsException;
+use TicketSwap\Assessment\Exceptions\TicketAlreadySoldException;
+use TicketSwap\Assessment\Exceptions\TicketNotFoundException;
+
 final class Marketplace
 {
     /**
      * @param array<Listing> $listingsForSale
+     * @param array<Listing> $listingsSoldOut
      */
-    public function __construct(private array $listingsForSale = [])
+    public function __construct(private array $listingsForSale = [], private array $listingsSoldOut = [])
     {
     }
 
@@ -20,20 +25,35 @@ final class Marketplace
     }
 
     /**
+     * @return array<Listing>
+     */
+    public function getListingsSoldOut() : array
+    {
+        return $this->listingsSoldOut;
+    }
+
+    /**
      * @param Buyer $buyer
      * @param TicketId $ticketId
      * @return Ticket
      * @throws TicketAlreadySoldException
+     * @throws TicketNotFoundException
      */
     public function buyTicket(Buyer $buyer, TicketId $ticketId) : Ticket
     {
         foreach($this->listingsForSale as $listing) {
             foreach($listing->getTickets() as $ticket) {
                 if ($ticket->getId()->equals($ticketId)) {
-                   return $ticket->buyTicket($buyer); 
+                   $boughtTicket = $ticket->buyTicket($buyer);
+
+                   $this->refreshListingsForSale();
+
+                   return $boughtTicket;
                 }
             }
         }
+
+        throw new TicketNotFoundException('Ticket with ID ' . $ticketId . ' does not exist.');
     }
 
     /**
@@ -41,13 +61,23 @@ final class Marketplace
      */
     public function setListingForSale(Listing $listing) : void
     {
-        if (!empty($this->listingsForSale)) {
-            $this->verifyBarcodesAgainstOtherListings($listing);
-        }
+        $this->verifyBarcodesAgainstOtherListings($listing);
 
         $this->listingsForSale[(string) $listing->getId()] = $listing;
     }
 
+    /**
+     * @return void
+     */
+    public function refreshListingsForSale() : void
+    {
+        foreach ($this->listingsForSale as $key => $listing) {
+            if (0 === count($listing->getTickets(true))) {
+                $this->listingsSoldOut[$key] = $listing;
+                unset($this->listingsForSale[$key]);
+            }
+        }
+    }
 
     /**
      * @param Listing $listing
@@ -56,10 +86,15 @@ final class Marketplace
      */
     private function verifyBarcodesAgainstOtherListings(Listing $listing) : void
     {
+        // Make sure to verify with both currently active and archived listings
+        $existingListings = array_merge($this->listingsForSale, $this->listingsSoldOut);
+
+        if (empty($existingListings)) return;
+
         $ticketsFromNewListing = $listing->getTickets();
 
         foreach ($ticketsFromNewListing as $ticket) {
-            foreach ($this->listingsForSale as $existingListing) {
+            foreach ($existingListings as $existingListing) {
                 $duplicatedTicket = $this->findDuplicateBarcodeInListing($ticket, $existingListing);
 
                 if (!$duplicatedTicket || $this->isTicketResell($duplicatedTicket, $listing)) continue;

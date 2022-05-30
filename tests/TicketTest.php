@@ -4,9 +4,9 @@ namespace TicketSwap\Assessment\tests;
 
 use PHPUnit\Framework\TestCase;
 use TicketSwap\Assessment\Barcode;
+use TicketSwap\Assessment\Exceptions\UnexpectedValueException;
 use TicketSwap\Assessment\Ticket;
 use TicketSwap\Assessment\TicketId;
-use TicketSwap\Assessment\UnexpectedValueException;
 
 class TicketTest extends TestCase
 {

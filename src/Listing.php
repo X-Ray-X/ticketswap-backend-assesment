@@ -3,6 +3,7 @@
 namespace TicketSwap\Assessment;
 
 use Money\Money;
+use TicketSwap\Assessment\Exceptions\BarcodeAlreadyExistsException;
 
 final class Listing
 {
