@@ -6,6 +6,10 @@ use TicketSwap\Assessment\Ticket;
 
 class BarcodeAlreadyExistsException extends \Exception
 {
+    /**
+     * @param Ticket $ticket
+     * @return static
+     */
     public static function withTicket(Ticket $ticket) : self
     {
         return new self(
@@ -16,6 +20,11 @@ class BarcodeAlreadyExistsException extends \Exception
         );
     }
 
+    /**
+     * @param Ticket $ticket
+     * @param Ticket $ticketWithDuplicateBarcode
+     * @return static
+     */
     public static function withTicketsInListing(Ticket $ticket, Ticket $ticketWithDuplicateBarcode) : self
     {
         return new self(

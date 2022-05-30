@@ -24,16 +24,25 @@ final class Listing
         $this->verifyIfBarcodesAreUnique($tickets);
     }
 
+    /**
+     * @return ListingId
+     */
     public function getId() : ListingId
     {
         return $this->id;
     }
 
+    /**
+     * @return Seller
+     */
     public function getSeller() : Seller
     {
         return $this->seller;
     }
 
+    /**
+     * @return Money
+     */
     public function getPrice() : Money
     {
         return $this->price;

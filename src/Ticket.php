@@ -29,6 +29,9 @@ final class Ticket
         }
     }
 
+    /**
+     * @return TicketId
+     */
     public function getId() : TicketId
     {
         return $this->id;
@@ -42,11 +45,17 @@ final class Ticket
         return $this->barcodes;
     }
 
+    /**
+     * @return Buyer
+     */
     public function getBuyer() : Buyer
     {
         return $this->buyer;
     }
 
+    /**
+     * @return bool
+     */
     public function isBought() : bool
     {
         return $this->buyer !== null;
